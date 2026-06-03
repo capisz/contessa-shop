@@ -30,6 +30,8 @@ type ProductImage = {
   cardObjectPosition?: string;
   cardScale?: number;
   cardTransformOrigin?: string;
+  previewObjectPosition?: string;
+  previewScale?: number;
 };
 
 type Product = {
@@ -57,14 +59,18 @@ const products: Product[] = [
             src: "/contessa-shop/products/long-sleeve-black-front.png",
             alt: "Front view of the black long sleeve crop top.",
             objectPosition: "center center",
-            cardScale: 1.055,
+            cardScale: 1.34,
             cardTransformOrigin: "center bottom",
+            previewObjectPosition: "center bottom",
+            previewScale: 1.04,
           },
           {
             label: "Back",
             src: "/contessa-shop/products/long-sleeve-black-back.png",
             alt: "Back view of the black long sleeve crop top.",
             objectPosition: "center center",
+            previewObjectPosition: "center bottom",
+            previewScale: 1.04,
           },
         ],
       },
@@ -77,12 +83,16 @@ const products: Product[] = [
             src: "/contessa-shop/products/long-sleeve-white-front.png",
             alt: "Front view of the white long sleeve crop top.",
             objectPosition: "center center",
+            previewObjectPosition: "center bottom",
+            previewScale: 1.04,
           },
           {
             label: "Back",
             src: "/contessa-shop/products/long-sleeve-white-back.png",
             alt: "Back view of the white long sleeve crop top.",
             objectPosition: "center center",
+            previewObjectPosition: "center bottom",
+            previewScale: 1.04,
           },
         ],
       },
@@ -104,19 +114,23 @@ const products: Product[] = [
             src: "/contessa-shop/products/short-sleeve-black-front-full.png",
             alt: "Full front view of the black short sleeve crop top.",
             objectPosition: "center 18%",
-            cardObjectPosition: "center 27%",
+            cardObjectPosition: "center 28%",
+            cardScale: 1.3,
+            previewObjectPosition: "center 28%",
           },
           {
             label: "Front",
             src: "/contessa-shop/products/short-sleeve-black-front.png",
             alt: "Closer front view of the black short sleeve crop top.",
             objectPosition: "center 18%",
+            previewObjectPosition: "center 28%",
           },
           {
             label: "Back",
             src: "/contessa-shop/products/short-sleeve-black-back.png",
             alt: "Back view of the black short sleeve crop top.",
             objectPosition: "center 18%",
+            previewObjectPosition: "center 30%",
           },
         ],
       },
@@ -129,18 +143,21 @@ const products: Product[] = [
             src: "/contessa-shop/products/short-sleeve-white-front-full.png",
             alt: "Full front view of the white short sleeve crop top.",
             objectPosition: "center 18%",
+            previewObjectPosition: "center 28%",
           },
           {
             label: "Front",
             src: "/contessa-shop/products/short-sleeve-white-front.png",
             alt: "Closer front view of the white short sleeve crop top.",
             objectPosition: "center 18%",
+            previewObjectPosition: "center 28%",
           },
           {
             label: "Back",
             src: "/contessa-shop/products/short-sleeve-white-back.png",
             alt: "Back view of the white short sleeve crop top.",
             objectPosition: "center 18%",
+            previewObjectPosition: "center 30%",
           },
         ],
       },
@@ -163,12 +180,15 @@ const products: Product[] = [
             alt: "Front view of the black classic tee.",
             objectPosition: "center 20%",
             cardObjectPosition: "center 25%",
+            cardScale: 1.3,
+            previewObjectPosition: "center 25%",
           },
           {
             label: "Back",
             src: "/contessa-shop/products/classic-tee-black-back.png",
             alt: "Back view of the black classic tee.",
             objectPosition: "center 20%",
+            previewObjectPosition: "center 25%",
           },
         ],
       },
@@ -181,12 +201,14 @@ const products: Product[] = [
             src: "/contessa-shop/products/classic-tee-white-front.avif",
             alt: "Front view of the white classic tee.",
             objectPosition: "center center",
+            previewObjectPosition: "center 25%",
           },
           {
             label: "Back",
             src: "/contessa-shop/products/classic-tee-white-back.avif",
             alt: "Back view of the white classic tee.",
             objectPosition: "center center",
+            previewObjectPosition: "center 25%",
           },
         ],
       },
@@ -232,6 +254,10 @@ export default function HomePage() {
     selectedProduct.colors[0];
 
   const selectedImage = selectedColor.images[selectedImageIndex] ?? selectedColor.images[0];
+  const selectedImageStyle = {
+    "--selection-image-scale": (selectedImage.previewScale ?? 1.02).toString(),
+    objectPosition: selectedImage.previewObjectPosition ?? selectedImage.objectPosition,
+  } as CSSProperties;
 
   const selectProduct = (product: Product) => {
     setSelectedProductId(product.id);
@@ -374,7 +400,7 @@ export default function HomePage() {
               fill
               sizes="(max-width: 920px) 92vw, 45vw"
               className="selection-image"
-              style={{ objectPosition: "center bottom" }}
+              style={selectedImageStyle}
             />
             {selectedColor.images.length > 1 ? (
               <div className="carousel-arrows" aria-label="Product image controls">

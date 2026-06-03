@@ -350,9 +350,9 @@ img {
 }
 
 .selection-image {
-  object-fit: contain;
-  transform: scale(1.18);
-  transform-origin: center bottom;
+  object-fit: cover;
+  transform: scale(var(--selection-image-scale, 1.02));
+  transform-origin: center center;
 }
 
 .carousel-arrows {
