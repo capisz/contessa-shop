@@ -1,564 +1,148 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import {
-  ArrowUpRight,
-  BadgeCheck,
-  ChevronLeft,
-  ChevronRight,
-  HeartHandshake,
-  Menu,
-  Search,
-  ShoppingBag,
-} from "lucide-react";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-const donationPercent = 20;
+type StyleId = "tee" | "short" | "long";
+type Style = { id: StyleId; name: string; price: number; fabric: string; sizes: string[]; out: Record<string, string[]>; chart: [string, string, string][] };
+type BagItem = { key: string; style: StyleId; print: string; color: string; size: string; qty: number; donation?: number };
 
-type ProductColor = {
-  name: string;
-  hex: string;
-  images: ProductImage[];
-};
-
-type ProductImage = {
-  label: string;
-  src: string;
-  alt: string;
-  objectPosition: string;
-  cardObjectPosition?: string;
-  cardScale?: number;
-  cardTransformOrigin?: string;
-  previewObjectPosition?: string;
-  previewScale?: number;
-};
-
-type Product = {
-  id: string;
-  name: string;
-  fabric: string;
-  price: string;
-  colors: ProductColor[];
-  sizes: string[];
-};
-
-const products: Product[] = [
-  {
-    id: "long-sleeve-crop",
-    name: "Long Sleeve Crop",
-    fabric: "Contour jersey",
-    price: "$48",
-    colors: [
-      {
-        name: "Black",
-        hex: "#111111",
-        images: [
-          {
-            label: "Front",
-            src: "/contessa-shop/products/long-sleeve-black-front.png",
-            alt: "Front view of the black long sleeve crop top.",
-            objectPosition: "center center",
-            cardScale: 1.34,
-            cardTransformOrigin: "center bottom",
-            previewObjectPosition: "center bottom",
-            previewScale: 1.04,
-          },
-          {
-            label: "Back",
-            src: "/contessa-shop/products/long-sleeve-black-back.png",
-            alt: "Back view of the black long sleeve crop top.",
-            objectPosition: "center center",
-            previewObjectPosition: "center bottom",
-            previewScale: 1.04,
-          },
-        ],
-      },
-      {
-        name: "White",
-        hex: "#f4f1e8",
-        images: [
-          {
-            label: "Front",
-            src: "/contessa-shop/products/long-sleeve-white-front.png",
-            alt: "Front view of the white long sleeve crop top.",
-            objectPosition: "center center",
-            previewObjectPosition: "center bottom",
-            previewScale: 1.04,
-          },
-          {
-            label: "Back",
-            src: "/contessa-shop/products/long-sleeve-white-back.png",
-            alt: "Back view of the white long sleeve crop top.",
-            objectPosition: "center center",
-            previewObjectPosition: "center bottom",
-            previewScale: 1.04,
-          },
-        ],
-      },
-    ],
-    sizes: ["XXS", "XS", "S", "M", "L", "XL"],
-  },
-  {
-    id: "short-sleeve-crop",
-    name: "Short Sleeve Crop",
-    fabric: "Ribbed cotton",
-    price: "$42",
-    colors: [
-      {
-        name: "Black",
-        hex: "#111111",
-        images: [
-          {
-            label: "Full",
-            src: "/contessa-shop/products/short-sleeve-black-front-full.png",
-            alt: "Full front view of the black short sleeve crop top.",
-            objectPosition: "center 18%",
-            cardObjectPosition: "center 28%",
-            cardScale: 1.3,
-            previewObjectPosition: "center 28%",
-          },
-          {
-            label: "Front",
-            src: "/contessa-shop/products/short-sleeve-black-front.png",
-            alt: "Closer front view of the black short sleeve crop top.",
-            objectPosition: "center 18%",
-            previewObjectPosition: "center 28%",
-          },
-          {
-            label: "Back",
-            src: "/contessa-shop/products/short-sleeve-black-back.png",
-            alt: "Back view of the black short sleeve crop top.",
-            objectPosition: "center 18%",
-            previewObjectPosition: "center 30%",
-          },
-        ],
-      },
-      {
-        name: "White",
-        hex: "#f4f1e8",
-        images: [
-          {
-            label: "Full",
-            src: "/contessa-shop/products/short-sleeve-white-front-full.png",
-            alt: "Full front view of the white short sleeve crop top.",
-            objectPosition: "center 18%",
-            previewObjectPosition: "center 28%",
-          },
-          {
-            label: "Front",
-            src: "/contessa-shop/products/short-sleeve-white-front.png",
-            alt: "Closer front view of the white short sleeve crop top.",
-            objectPosition: "center 18%",
-            previewObjectPosition: "center 28%",
-          },
-          {
-            label: "Back",
-            src: "/contessa-shop/products/short-sleeve-white-back.png",
-            alt: "Back view of the white short sleeve crop top.",
-            objectPosition: "center 18%",
-            previewObjectPosition: "center 30%",
-          },
-        ],
-      },
-    ],
-    sizes: ["XS", "S", "M", "L", "XL", "2X"],
-  },
-  {
-    id: "classic-tee",
-    name: "Classic Tee",
-    fabric: "Soft everyday fit",
-    price: "$44",
-    colors: [
-      {
-        name: "Black",
-        hex: "#111111",
-        images: [
-          {
-            label: "Front",
-            src: "/contessa-shop/products/classic-tee-black-front.png",
-            alt: "Front view of the black classic tee.",
-            objectPosition: "center 20%",
-            cardObjectPosition: "center 25%",
-            cardScale: 1.3,
-            previewObjectPosition: "center 25%",
-          },
-          {
-            label: "Back",
-            src: "/contessa-shop/products/classic-tee-black-back.png",
-            alt: "Back view of the black classic tee.",
-            objectPosition: "center 20%",
-            previewObjectPosition: "center 25%",
-          },
-        ],
-      },
-      {
-        name: "White",
-        hex: "#f4f1e8",
-        images: [
-          {
-            label: "Front",
-            src: "/contessa-shop/products/classic-tee-white-front.avif",
-            alt: "Front view of the white classic tee.",
-            objectPosition: "center center",
-            previewObjectPosition: "center 25%",
-          },
-          {
-            label: "Back",
-            src: "/contessa-shop/products/classic-tee-white-back.avif",
-            alt: "Back view of the white classic tee.",
-            objectPosition: "center center",
-            previewObjectPosition: "center 25%",
-          },
-        ],
-      },
-    ],
-    sizes: ["S", "M", "L", "XL", "2X", "3X"],
-  },
+const styles: Style[] = [
+  { id: "tee", name: "Men's T-Shirt", price: 44, fabric: "Soft everyday fit", sizes: ["S", "M", "L", "XL", "2X", "3X"], out: { Black: ["XL"], White: ["S", "M"] }, chart: [["S", "34–36\"", "27\""], ["M", "38–40\"", "28\""], ["L", "42–44\"", "29\""], ["XL", "46–48\"", "30\""], ["2X", "50–52\"", "31\""], ["3X", "54–56\"", "32\""]] },
+  { id: "short", name: "Women's Short Sleeve Crop", price: 42, fabric: "Ribbed cotton", sizes: ["XS", "S", "M", "L", "XL", "2X"], out: { Black: ["M"], White: ["XS", "XL"] }, chart: [["XS", "30–32\"", "14.5\""], ["S", "32–34\"", "15\""], ["M", "34–36\"", "15.5\""], ["L", "36–38\"", "16\""], ["XL", "38–40\"", "16.5\""], ["2X", "40–43\"", "17\""]] },
+  { id: "long", name: "Women's Long Sleeve Crop", price: 48, fabric: "Contour jersey", sizes: ["XXS", "XS", "S", "M", "L", "XL"], out: { Black: ["XS", "XL"] }, chart: [["XXS", "28–30\"", "15\""], ["XS", "30–32\"", "15.5\""], ["S", "32–34\"", "16\""], ["M", "34–36\"", "16.5\""], ["L", "36–38\"", "17\""], ["XL", "38–40\"", "17.5\""]] },
 ];
-
-const materialNotes = [
-  "Double-stitched hems",
-  "Soft stretch recovery",
-  "Made-to-order pacing",
+const prints = [
+  ["luffy", "Luffy Would Free Palestine"], ["girls", "Hot Girls Are Anti-Zionist"], ["boys", "Hot Boys Are Anti-Zionist"],
+  ["luigi", "Luigi Can Fix Me"], ["gojo", "Gojo's Pillows"], ["nanami", "Nanami's Stress Balls"],
+  ["zoro", "Zoro's Cardio"], ["sukuna", "Sukuna's Domain"], ["doflamingo", "Doflamingo's Puppet"], ["levi", "Levi's Tea Bags"], ["choso", "Choso's Therapist"],
+] as const;
+const colors = [
+  { name: "Black", hex: "#111111" }, { name: "White", hex: "#f4f1e8" }, { name: "Olive", hex: "#545a36" },
+  { name: "Green", hex: "#1f3d2c", out: true }, { name: "Navy", hex: "#1d2a44", out: true }, { name: "Pink", hex: "#e8b7c4", out: true },
 ];
+const base = "/contessa-handoff/assets";
+const photo = (name: string) => `${base}/photos/${name}.png`;
+const flat = (name: string) => `${base}/flats/${name}.png`;
+const printLabel = (id: string) => prints.find(([key]) => key === id)?.[1] ?? prints[0][1];
+const styleById = (id: StyleId) => styles.find((item) => item.id === id)!;
+const sizeIsOut = (style: StyleId, color: string, size: string) => Boolean(size && (colors.find((item) => item.name === color)?.out || styleById(style).out[color]?.includes(size)));
+const shopTiles: ([string, StyleId, string?] | ["life", StyleId])[] = [["luffy", "short", "Black"], ["luffy", "tee", "Black"], ["girls", "long", "Black"], ["boys", "tee", "Olive"], ["life", "short"], ["luigi", "short", "Black"], ["nanami", "short", "White"], ["gojo", "short", "White"], ["zoro", "short", "White"], ["sukuna", "short", "White"], ["life", "long"], ["levi", "short", "White"], ["doflamingo", "short", "White"], ["choso", "short", "White"], ["luffy", "tee", "White"]];
 
-const pcrfBackgroundImages = [
-  {
-    src: "/gengar-contessa/pcrf-bg-1.jpg",
-    objectPosition: "center center",
-  },
-  {
-    src: "/gengar-contessa/pcrf-bg-2.jpg",
-    objectPosition: "center center",
-  },
-  {
-    src: "/gengar-contessa/pcrf-bg-3.webp",
-    objectPosition: "center center",
-  },
-];
+function imagesFor(style: StyleId, print: string, color: string) {
+  const modelImages: Record<string, string[]> = {
+    "short:luffy:Black": [photo("m1"), photo("m5"), photo("m3")],
+    "tee:luffy:Black": [photo("c3")], "tee:luffy:White": [photo("c2")], "tee:boys:Olive": [photo("c1")],
+    "long:girls:Black": [flat("long-girls-black"), photo("long-neckline"), photo("long-camera")],
+  };
+  const flatName: Record<string, string> = {
+    "short:luffy:Black": "crop-luffy-black", "short:luigi:Black": "crop-luigi-black",
+    "short:nanami:White": "crop-nanami-white", "short:gojo:White": "crop-gojo-white", "short:zoro:White": "crop-zoro-white",
+    "short:sukuna:White": "crop-sukuna-white", "short:levi:White": "crop-levi-white", "short:doflamingo:White": "crop-doflamingo-white", "short:choso:White": "crop-choso-white",
+  };
+  const key = `${style}:${print}:${color}`;
+  const direct = (candidate: string) => {
+    const productFlats = flatName[candidate] ? [flat(flatName[candidate])] : [];
+    if (candidate === "short:luffy:Black") productFlats.push(flat("crop-luffy-black-2"));
+    return [...productFlats, ...(modelImages[candidate] ?? [])];
+  };
+  const exact = direct(key);
+  if (exact.length) return exact;
+  const combos = [...Object.keys(flatName), ...Object.keys(modelImages)];
+  const samePrint = combos.find((candidate) => candidate.startsWith(`${style}:${print}:`));
+  if (samePrint) return direct(samePrint);
+  const sameStyleAndColor = combos.find((candidate) => candidate.startsWith(`${style}:`) && candidate.endsWith(`:${color}`));
+  if (sameStyleAndColor) return direct(sameStyleAndColor);
+  const defaultCombo: Record<StyleId, string> = { tee: "tee:luffy:Black", short: "short:luffy:Black", long: "long:girls:Black" };
+  return direct(defaultCombo[style]);
+}
+
+function pictureFor(style: StyleId, print: string, color: string) { return imagesFor(style, print, color)[0]; }
+
+function Header({ count, go, openMenu, openBag }: { count: number; go: (route: string) => void; openMenu: () => void; openBag: () => void }) {
+  return <><button className="announcement" onClick={() => go("impact")}>20% of proceeds support PCRF <span>↗</span></button><header className="header">
+    <button className="menu-trigger" onClick={openMenu}><i /><i /> MENU</button><button className="wordmark" onClick={() => go("home")}>CONTESSA</button><button className="bag-trigger" onClick={openBag}>BAG ({count})</button>
+  </header></>;
+}
+
+function ProductTile({ style, print, color = "Black", quick, open }: { style: StyleId; print: string; color?: string; quick: (s: StyleId, p: string) => void; open: (s: StyleId, p: string, c?: string) => void }) {
+  const item = styleById(style);
+  return <article className="tile"><button className="tile-picture" onClick={() => open(style, print, color)}><Image src={pictureFor(style, print, color)} alt={`${printLabel(print)} on ${item.name}`} fill sizes="(max-width:700px) 48vw, 24vw" /></button><button className="quick-plus" aria-label={`Quick add ${printLabel(print)}`} onClick={() => quick(style, print)}>+</button><button className="tile-copy" onClick={() => open(style, print, color)}><span><b>{printLabel(print)}</b><small>{item.name} · {color}</small></span><strong>${item.price}</strong></button></article>;
+}
 
 export default function HomePage() {
-  const [selectedProductId, setSelectedProductId] = useState(products[0].id);
-  const [selectedColorName, setSelectedColorName] = useState(products[0].colors[0].name);
-  const [selectedSize, setSelectedSize] = useState(products[0].sizes[2]);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [route, setRoute] = useState("home");
+  const [styleId, setStyleId] = useState<StyleId>("short");
+  const [print, setPrint] = useState("luffy");
+  const [color, setColor] = useState("Black");
+  const [size, setSize] = useState("");
+  const [slide, setSlide] = useState(0);
+  const [bag, setBag] = useState<BagItem[]>([]);
+  const [bagOpen, setBagOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [quick, setQuick] = useState<{ style: StyleId; print: string } | null>(null);
+  const [donateOpen, setDonateOpen] = useState(false);
+  const [donation, setDonation] = useState(0);
+  const [donationChoice, setDonationChoice] = useState("10");
+  const [customDonation, setCustomDonation] = useState("");
+  const [notifyEmail, setNotifyEmail] = useState("");
+  const [notified, setNotified] = useState(false);
+  const [toast, setToast] = useState("");
+  const [openAccordion, setOpenAccordion] = useState("");
+  const [guideStyle, setGuideStyle] = useState<StyleId>("tee");
+  const [ordered, setOrdered] = useState(false);
+  const [delivery, setDelivery] = useState("standard");
+  const [summaryOpen, setSummaryOpen] = useState(true);
+  const [checkoutError, setCheckoutError] = useState("");
+  const [checkout, setCheckout] = useState({ email: "", first: "", last: "", address: "", apt: "", city: "", state: "", zip: "" });
+  const productGallery = useRef<HTMLDivElement>(null);
 
-  const selectedProduct = useMemo(
-    () => products.find((product) => product.id === selectedProductId) ?? products[0],
-    [selectedProductId],
-  );
-
-  const selectedColor =
-    selectedProduct.colors.find((color) => color.name === selectedColorName) ??
-    selectedProduct.colors[0];
-
-  const selectedImage = selectedColor.images[selectedImageIndex] ?? selectedColor.images[0];
-  const selectedImageStyle = {
-    "--selection-image-scale": (selectedImage.previewScale ?? 1.02).toString(),
-    objectPosition: selectedImage.previewObjectPosition ?? selectedImage.objectPosition,
-  } as CSSProperties;
-
-  const selectProduct = (product: Product) => {
-    setSelectedProductId(product.id);
-    setSelectedColorName(product.colors[0].name);
-    setSelectedSize(product.sizes[Math.min(2, product.sizes.length - 1)]);
-    setSelectedImageIndex(0);
+  const currentStyle = styleById(styleId);
+  const currentImages = useMemo(() => imagesFor(styleId, print, color), [styleId, print, color]);
+  const soldOut = colors.find((item) => item.name === color)?.out ?? false;
+  const selectedSizeOut = sizeIsOut(styleId, color, size);
+  const bagCount = bag.reduce((sum, item) => sum + item.qty, 0);
+  const subtotal = bag.reduce((sum, item) => sum + (item.donation ?? styleById(item.style).price) * item.qty, 0);
+  const money = (value: number) => `$${value.toFixed(2)}`;
+  const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(""), 2800); };
+  const go = (next: string) => { setRoute(next); setMenuOpen(false); setBagOpen(false); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const openProduct = (style: StyleId, slogan: string, shade = "Black") => { setStyleId(style); setPrint(slogan); setColor(shade); setSize(""); setSlide(0); go("product"); };
+  const addItem = (style: StyleId, slogan: string, shade: string, chosenSize: string) => {
+    const key = `${style}-${slogan}-${shade}-${chosenSize}`;
+    setBag((prev) => prev.some((item) => item.key === key) ? prev.map((item) => item.key === key ? { ...item, qty: item.qty + 1 } : item) : [...prev, { key, style, print: slogan, color: shade, size: chosenSize, qty: 1 }]);
   };
+  const showBag = () => { setBagOpen(true); setQuick(null); setDonateOpen(false); };
+  useEffect(() => { if (route === "home" && !localStorage.getItem("gc-donate-popup-seen")) { const timer = window.setTimeout(() => { setDonateOpen(true); localStorage.setItem("gc-donate-popup-seen", "1"); }, 1400); return () => window.clearTimeout(timer); } }, [route]);
 
-  const selectColor = (color: ProductColor) => {
-    setSelectedColorName(color.name);
-    setSelectedImageIndex(0);
-  };
+  const addDonation = (value: number) => { setDonation(value); setBag((prev) => { const noDonation = prev.filter((item) => !item.donation); return value ? [...noDonation, { key: "pcrf-donation", style: "tee", print: "", color: "", size: "", qty: 1, donation: value }] : noDonation; }); };
+  const menu = <div className="overlay" onClick={() => setMenuOpen(false)}><section className="menu-panel" onClick={(event) => event.stopPropagation()}><div className="overlay-heading"><span>CONTESSA</span><button onClick={() => setMenuOpen(false)}>×</button></div>{["Shop all", "Men's T-Shirt", "Women's Short Sleeve Crop", "Women's Long Sleeve Crop", "Size guide", "Impact", "Donate"].map((entry, index) => <button className="menu-row" key={entry} onClick={() => { if (index === 0) go("shop"); else if (index < 4) openProduct(styles[index - 1].id, print); else if (index === 4) go("size"); else if (index === 5) go("impact"); else { setMenuOpen(false); setDonateOpen(true); } }}><small>0{index + 1}</small>{entry}<span>↗</span></button>)}<footer>INSTAGRAM ↗ <button onClick={showBag}>BAG ({bagCount})</button></footer></section></div>;
+  const bagDrawer = <div className="overlay overlay-right" onClick={() => setBagOpen(false)}><aside className="bag-drawer" onClick={(event) => event.stopPropagation()}><div className="overlay-heading"><span>YOUR BAG ({bagCount})</span><button onClick={() => setBagOpen(false)}>×</button></div><div className="bag-lines">{!bag.length && <div className="empty-bag"><p>Your bag is empty.</p><button className="button dark" onClick={() => go("shop")}>Explore the drop</button></div>}{bag.map((item) => item.donation ? <div className="bag-line donation-line" key={item.key}><Image src={`${base}/gc/pcrf-logo.png`} alt="PCRF" width={100} height={40} /><span>Donation to PCRF<small>Thank you for supporting children</small></span><b>{money(item.donation)}</b><button className="remove" onClick={() => addDonation(0)}>Remove</button></div> : <div className="bag-line" key={item.key}><button className="bag-thumb" onClick={() => openProduct(item.style, item.print, item.color)}><Image src={pictureFor(item.style, item.print, item.color)} alt="" fill sizes="96px" /></button><div className="bag-description"><b>{printLabel(item.print)}</b><small>{styleById(item.style).name} · {item.color} · {item.size}</small><div className="qty-control"><button onClick={() => setBag((old) => old.map((row) => row.key === item.key ? { ...row, qty: Math.max(1, row.qty - 1) } : row))}>−</button>{item.qty}<button onClick={() => setBag((old) => old.map((row) => row.key === item.key ? { ...row, qty: row.qty + 1 } : row))}>+</button><button className="remove" onClick={() => setBag((old) => old.filter((row) => row.key !== item.key))}>Remove</button></div></div><b>{money(styleById(item.style).price * item.qty)}</b></div>)}</div><div className="bag-bottom"><div><span>Subtotal</span><b>{money(subtotal)}</b></div><small>Shipping calculated at checkout</small><button className="button dark" disabled={!bag.length} onClick={() => go("checkout")}>Checkout</button></div></aside></div>;
+  const donateModal = <div className="overlay modal-overlay" onClick={() => setDonateOpen(false)}><section className="donate-modal" onClick={(event) => event.stopPropagation()}><button className="modal-close" onClick={() => setDonateOpen(false)}>×</button><Image src={`${base}/gc/pcrf-logo.png`} alt="Palestine Children's Relief Fund" width={180} height={72} /><p className="eyebrow">A little more care goes a long way</p><h2>Add a donation to your order</h2><div className="donation-options">{["5", "10", "25", "Custom"].map((amount) => <button className={donationChoice === amount ? "selected" : ""} key={amount} onClick={() => setDonationChoice(amount)}>{amount === "Custom" ? amount : `$${amount}`}</button>)}</div>{donationChoice === "Custom" && <label className="custom-amount">Custom amount <input type="number" min="1" value={customDonation} onChange={(event) => setCustomDonation(event.target.value)} /></label>}<button className="button dark" disabled={donationChoice === "Custom" && Number(customDonation) <= 0} onClick={() => { const amount = donationChoice === "Custom" ? Number(customDonation) : Number(donationChoice); if (amount > 0) { addDonation(amount); setDonateOpen(false); notify(`$${amount} added for PCRF`); } }}>{donationChoice === "Custom" ? customDonation ? `Add $${customDonation} to bag` : "Add donation" : `Add $${donationChoice} to bag`}</button><button className="text-button" onClick={() => setDonateOpen(false)}>Not now</button></section></div>;
 
-  const cycleImage = (direction: -1 | 1) => {
-    setSelectedImageIndex((currentIndex) => {
-      const imageCount = selectedColor.images.length;
-
-      return (currentIndex + direction + imageCount) % imageCount;
-    });
-  };
-
-  useEffect(() => {
-    if (selectedColor.images.length < 2) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setSelectedImageIndex((currentIndex) => (currentIndex + 1) % selectedColor.images.length);
-    }, 2000);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [selectedColor.images.length, selectedColorName, selectedImageIndex, selectedProductId]);
-
-  return (
-    <main className="min-h-screen bg-[var(--gc-paper)] text-[var(--gc-ink)]">
-      <div className="announcement">
-        <span>{donationPercent}% of all proceeds support PCRF relief work</span>
-        <Link href="#impact" aria-label="Jump to impact section">
-          <ArrowUpRight size={16} strokeWidth={2} aria-hidden="true" />
-        </Link>
-      </div>
-
-      <header className="site-header" aria-label="Main navigation">
-        <Link href="/" className="brand-mark" aria-label="Contessa Shop home">
-          <span>Contessa</span>
-          <span className="brand-accent">Shop</span>
-        </Link>
-
-        <nav className="desktop-nav" aria-label="Store sections">
-          <Link href="#styles">Styles</Link>
-          <Link href="#selection">Fit</Link>
-          <Link href="#impact">Impact</Link>
-          <Link href="#details">Details</Link>
-        </nav>
-
-        <div className="header-actions" aria-label="Store tools">
-          <button aria-label="Search" type="button">
-            <Search size={19} strokeWidth={1.9} aria-hidden="true" />
-          </button>
-          <button aria-label="Shopping bag" type="button">
-            <ShoppingBag size={19} strokeWidth={1.9} aria-hidden="true" />
-          </button>
-          <button className="mobile-menu" aria-label="Menu" type="button">
-            <Menu size={21} strokeWidth={1.9} aria-hidden="true" />
-          </button>
-        </div>
-      </header>
-
-      <section className="collection-intro" aria-labelledby="collection-title">
-        <div>
-          <p className="kicker">Limited essentials drop</p>
-          <h1 id="collection-title">Current Drop</h1>
-        </div>
-        <p>
-          Soft, close-fit staples in clean colors, shaped for repeat wear and
-          photographed with the product first.
-        </p>
-      </section>
-
-      <section className="style-section" id="styles" aria-label="Clothing styles">
-        <div className="style-grid">
-          {products.map((product) => {
-            const coverImage = product.colors[0].images[0];
-            const isSelected = selectedProduct.id === product.id;
-            const cardScale = coverImage.cardScale ?? 1.01;
-            const coverImageStyle = {
-              "--style-image-hover-scale": (cardScale + 0.035).toString(),
-              "--style-image-origin": coverImage.cardTransformOrigin ?? "center center",
-              "--style-image-scale": cardScale.toString(),
-              objectPosition: coverImage.cardObjectPosition ?? coverImage.objectPosition,
-            } as CSSProperties;
-
-            return (
-              <button
-                aria-pressed={isSelected}
-                className="style-card"
-                data-active={isSelected}
-                key={product.id}
-                onClick={() => selectProduct(product)}
-                type="button"
-              >
-                <div className="style-image-wrap">
-                  <Image
-                    src={coverImage.src}
-                    alt={coverImage.alt}
-                    fill
-                    sizes="(max-width: 760px) 92vw, (max-width: 1180px) 46vw, 24vw"
-                    priority={product.id === "long-sleeve-crop"}
-                    className="style-image"
-                    style={coverImageStyle}
-                  />
-                </div>
-                <div className="style-meta">
-                  <div>
-                    <h2>{product.name}</h2>
-                    <p>{product.fabric}</p>
-                  </div>
-                  <div className="style-purchase">
-                    <span>{product.colors[0].name}</span>
-                    <strong>{product.price}</strong>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      <section
-        className="selection-section"
-        id="selection"
-        aria-labelledby="selection-title"
-      >
-        <div className="selection-media">
-          <div className="product-preview">
-            <Image
-              key={`${selectedProduct.id}-${selectedImage.label}`}
-              src={selectedImage.src}
-              alt={selectedImage.alt}
-              fill
-              sizes="(max-width: 920px) 92vw, 45vw"
-              className="selection-image"
-              style={selectedImageStyle}
-            />
-            {selectedColor.images.length > 1 ? (
-              <div className="carousel-arrows" aria-label="Product image controls">
-                <button
-                  aria-label="Previous product angle"
-                  onClick={() => cycleImage(-1)}
-                  type="button"
-                >
-                  <ChevronLeft size={24} strokeWidth={2} aria-hidden="true" />
-                </button>
-                <button
-                  aria-label="Next product angle"
-                  onClick={() => cycleImage(1)}
-                  type="button"
-                >
-                  <ChevronRight size={24} strokeWidth={2} aria-hidden="true" />
-                </button>
-              </div>
-            ) : null}
-          </div>
-          <div className="angle-controls" aria-label="Image angles">
-            {selectedColor.images.map((image, index) => (
-              <button
-                aria-pressed={selectedImageIndex === index}
-                key={image.label}
-                onClick={() => setSelectedImageIndex(index)}
-                type="button"
-              >
-                {image.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="selection-panel">
-          <p className="kicker">Selected style</p>
-          <h2 id="selection-title">{selectedProduct.name}</h2>
-          <div className="selection-price-row">
-            <span>{selectedProduct.fabric}</span>
-            <strong>{selectedProduct.price}</strong>
-          </div>
-
-          <fieldset className="option-fieldset">
-            <legend>Color</legend>
-            <div className="swatch-row">
-              {selectedProduct.colors.map((color) => (
-                <button
-                  aria-label={`${color.name} color`}
-                  aria-pressed={selectedColor.name === color.name}
-                  className="swatch-button"
-                  key={color.name}
-                  onClick={() => selectColor(color)}
-                  style={{ backgroundColor: color.hex }}
-                  type="button"
-                />
-              ))}
-            </div>
-            <p>{selectedColor.name}</p>
-          </fieldset>
-
-          <fieldset className="option-fieldset">
-            <legend>Size</legend>
-            <div className="size-row">
-              {selectedProduct.sizes.map((size) => (
-                <button
-                  aria-pressed={selectedSize === size}
-                  key={size}
-                  onClick={() => setSelectedSize(size)}
-                  type="button"
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-
-          <button className="add-selection-button" type="button">
-            Add {selectedSize} / {selectedColor.name}
-          </button>
-        </div>
-      </section>
-
-      <section className="impact-section" id="impact" aria-labelledby="impact-title">
-        <div className="impact-backgrounds" aria-hidden="true">
-          {pcrfBackgroundImages.map((image, index) => (
-            <div className="impact-background" key={image.src}>
-              <Image
-                src={image.src}
-                alt=""
-                fill
-                sizes="100vw"
-                priority={index === 0}
-                className="impact-background-image"
-                style={{ objectPosition: image.objectPosition }}
-              />
-            </div>
-          ))}
-        </div>
-
-        <div className="impact-copy">
-          <p className="kicker">Relief commitment</p>
-          <h2 id="impact-title">
-            {donationPercent}% of every order is directed to the Palestine
-            Children&apos;s Relief Fund.
-          </h2>
-          <p>
-            PCRF provides medical and humanitarian relief for children across the
-            Levant. Each drop includes a donation receipt recap after the sales
-            window closes.
-          </p>
-          <div className="impact-action-row">
-            <Link
-              className="impact-link"
-              href="https://www.pcrf.net/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Visit PCRF
-              <ArrowUpRight size={18} strokeWidth={1.9} aria-hidden="true" />
-            </Link>
-            <Image
-              src="/gengar-contessa/pcrf-logo.png"
-              alt="PCRF Palestine Children's Relief Fund"
-              width={220}
-              height={75}
-              className="pcrf-logo"
-            />
-          </div>
-        </div>
-
-      </section>
-
-      <section className="details-section" id="details" aria-labelledby="details-title">
-        <div className="details-heading">
-          <p className="kicker">Drop notes</p>
-          <h2 id="details-title">Minimal on purpose. Built for everyday rotation.</h2>
-        </div>
-        <div className="details-grid">
-          {materialNotes.map((note) => (
-            <div className="detail-item" key={note}>
-              <BadgeCheck size={21} strokeWidth={1.8} aria-hidden="true" />
-              <span>{note}</span>
-            </div>
-          ))}
-          <div className="detail-item accent-detail">
-            <HeartHandshake size={22} strokeWidth={1.8} aria-hidden="true" />
-            <span>Impact report posted after fulfillment</span>
-          </div>
-        </div>
-      </section>
-
-      <footer className="site-footer">
-        <span>Contessa Shop</span>
-        <Link href="https://www.pcrf.net/" target="_blank" rel="noreferrer">
-          PCRF
-          <ArrowUpRight size={15} strokeWidth={1.9} aria-hidden="true" />
-        </Link>
-      </footer>
-    </main>
-  );
+  return <main>
+    <Header count={bagCount} go={go} openMenu={() => setMenuOpen(true)} openBag={showBag} />
+    {route === "home" && <>
+      <section className="hero"><Image src={photo("long-camera")} alt="Model wearing the Hot Girls Are Anti-Zionist long sleeve crop" fill priority sizes="100vw" /><div className="hero-shade"/><div className="hero-copy"><p className="eyebrow">Limited essentials drop</p><h1>Wear what<br className="desktop-break"/> you stand for</h1><div className="hero-actions"><button className="button light" onClick={() => go("shop")}>Shop the drop</button><button className="button outline-light" onClick={() => setDonateOpen(true)}>Donate to PCRF</button></div></div></section>
+      <section className="drop-section"><div className="section-heading"><h2>The drop</h2><button className="underlined" onClick={() => go("shop")}>Shop all</button></div><div className="drop-scroller">{[["short", "luffy", "Black"], ["tee", "luffy", "Black"], ["long", "girls", "Black"]].map(([s, p, c]) => <div className="drop-card" key={s}><ProductTile style={s as StyleId} print={p} color={c} quick={(a, b) => setQuick({ style: a, print: b })} open={openProduct} /></div>)}</div></section>
+      <ImpactBlock openDonate={() => setDonateOpen(true)} goImpact={() => go("impact")} />
+      <section className="drop-notes"><div className="notes-image"><Image src={photo("m3")} alt="Luffy Would Free Palestine crop top in rotation" fill sizes="(max-width: 760px) 100vw, 45vw" /></div><div className="notes-copy"><p className="eyebrow">Drop notes</p><h2>Minimal on purpose. Built for everyday rotation.</h2><p>Soft, close-fit staples in clean colors, shaped for repeat wear and photographed with the product first.</p>{["Double-stitched hems", "Soft stretch recovery", "Made-to-order pacing"].map((note, i) => <div className="note-row" key={note}><small>0{i + 1}</small>{note}</div>)}</div></section>
+      <section className="rotation"><div className="section-heading"><h2>In rotation</h2><a className="underlined" href="https://instagram.com" target="_blank" rel="noreferrer">Follow on Instagram ↗</a></div><div className="marquee"><div className="marquee-track">{["m1", "m3", "m5", "c1", "c2", "c3", "long-camera", "long-neckline", "m1", "m3", "m5", "c1", "c2", "c3", "long-camera", "long-neckline"].map((src, i) => <button key={`${src}-${i}`} onClick={() => openProduct(i > 5 ? "long" : "short", i > 5 ? "girls" : "luffy")}><Image src={photo(src)} alt="Contessa drop in rotation" fill sizes="168px" /></button>)}</div></div></section>
+      <Newsletter notify={notify} />
+    </>}
+    {route === "shop" && <section className="shop-page page-gutter"><p className="eyebrow">Shop all · 11 prints · 3 styles</p><div className="section-heading shop-title"><h1>Wear what you stand for</h1><span>20% supports PCRF</span></div><div className="shop-grid">{shopTiles.map((tile, index) => tile[0] === "life" ? <button className="on-model" key={`life-${tile[1]}-${index}`} onClick={() => openProduct(tile[1], tile[1] === "long" ? "girls" : "luffy")}><Image src={photo(tile[1] === "long" ? "long-camera" : "m5")} alt={`${styleById(tile[1]).name} on model`} fill sizes="(max-width:760px) 100vw, 60vw" /><span>On model<small>{styleById(tile[1]).name}</small></span></button> : <ProductTile key={`${tile[0]}-${tile[1]}-${tile[2]}`} style={tile[1]} print={tile[0]} color={tile[2] ?? "Black"} quick={(s, p) => setQuick({ style: s, print: p })} open={openProduct} />)}</div></section>}
+    {route === "product" && <>
+      <section className="product-page"><div className="product-gallery" ref={productGallery}><button className="back-chip" onClick={() => go("shop")}>← Shop</button><div className="gallery-slide"><Image src={currentImages[slide % currentImages.length]} alt={`${printLabel(print)} ${currentStyle.name} product image`} fill priority sizes="(max-width:860px) 100vw, 48vw" style={{ objectFit: currentImages[slide % currentImages.length].includes("flats") ? "contain" : "cover", objectPosition: currentImages[slide % currentImages.length].includes("long-camera") ? "center 25%" : "center 20%" }} /></div><div className="gallery-dots">{currentImages.map((src, i) => <button aria-label={`Show image ${i + 1}`} className={i === slide % currentImages.length ? "active" : ""} key={src + i} onClick={() => setSlide(i)} />)}</div></div><div className="product-info"><p className="eyebrow">{currentStyle.name}</p><h1>{printLabel(print)}</h1><div className="price-line"><span>{currentStyle.fabric} · front chest print</span><b>${currentStyle.price}</b></div><div className="picker"><div className="picker-title"><span>01 · Style</span></div><div className="style-options">{styles.map((item) => <button className={item.id === styleId ? "selected" : ""} key={item.id} onClick={() => { setStyleId(item.id); if (!item.sizes.includes(size)) setSize(""); setSlide(0); }}>{item.name.replace("Women's ", "").replace("Men's ", "")}</button>)}</div></div><div className="picker"><div className="picker-title"><span>02 · Print</span></div><div className="print-options">{prints.map(([id, slogan]) => <button className={print === id ? "selected" : ""} key={id} onClick={() => { setPrint(id); setSlide(0); if (window.innerWidth <= 859) requestAnimationFrame(() => productGallery.current?.scrollIntoView({ behavior: "smooth", block: "start" })); }}><span>{slogan}</span><i /></button>)}</div></div><div className="picker"><div className="picker-title"><span>03 · Color</span><span>{color}{soldOut ? " · Sold out" : ""}</span></div><div className="color-options">{colors.map((item) => <button aria-label={item.name} aria-pressed={color === item.name} className={item.out ? "sold" : ""} key={item.name} onClick={() => { setColor(item.name); setSlide(0); setNotified(false); }}><i style={{ background: item.hex }} /></button>)}</div></div><div className="picker" id="size-picker"><div className="picker-title"><span>04 · Size</span><button className="text-button" onClick={() => go("size")}>Size guide ↗</button></div><div className="size-options">{currentStyle.sizes.map((item) => <button className={size === item ? "selected" : ""} key={item} disabled={sizeIsOut(styleId, color, item)} onClick={() => setSize(item)}>{item}</button>)}</div></div>{(soldOut || selectedSizeOut) && <div className="restock-panel" id="restock"><b>{printLabel(print)} in {color}{!soldOut && size ? ` · ${size}` : ""} is sold out.</b><p>Get an email when it restocks.</p>{notified ? <strong>We'll email {notifyEmail} when this is back.</strong> : <form onSubmit={(event) => { event.preventDefault(); if (notifyEmail.includes("@")) { setNotified(true); notify("Restock alert set"); } }}><input type="email" required placeholder="Email address" value={notifyEmail} onChange={(event) => setNotifyEmail(event.target.value)} /><button className="button dark">Notify me</button></form>}</div>}<button className="button add-to-bag" onClick={() => { if (soldOut || selectedSizeOut) document.getElementById("restock")?.scrollIntoView({ behavior: "smooth" }); else if (!size) document.getElementById("size-picker")?.scrollIntoView({ behavior: "smooth" }); else { addItem(styleId, print, color, size); showBag(); } }}>{soldOut || selectedSizeOut ? `${size || color} sold out · Notify me` : size ? `Add to bag · ${size}` : "Select a size"}<span>${currentStyle.price}.00</span></button><div className="accordions">{[["Details", `${currentStyle.fabric}. Designed for everyday wear with a front chest print. 20% of proceeds support PCRF.`], ["Fit & care", "Follow the printed care label. Wash cold with like colors and hang dry for best print life."], ["Shipping & returns", "Made-to-order pacing. Standard delivery takes 5–8 business days after the drop closes. Returns accepted within 30 days of delivery."]].map(([title, content]) => <div key={title}><button onClick={() => setOpenAccordion(openAccordion === title ? "" : title)}>{title}<span>{openAccordion === title ? "−" : "+"}</span></button>{openAccordion === title && <p>{content}</p>}</div>)}</div></div></section><section className="related page-gutter"><div className="section-heading"><h2>You may also like</h2></div><div className="related-grid">{prints.filter(([id]) => id !== print).slice(0, 4).map(([id]) => <ProductTile key={id} style={styleId} print={id} quick={(s, p) => setQuick({ style: s, print: p })} open={openProduct} />)}</div></section>
+    </>}
+    {route === "impact" && <ImpactPage openDonate={() => setDonateOpen(true)} />}
+    {route === "size" && <section className="size-page page-gutter"><p className="eyebrow">Find your fit</p><h1>Size guide</h1><div className="guide-tabs">{styles.map((item) => <button className={guideStyle === item.id ? "selected" : ""} key={item.id} onClick={() => setGuideStyle(item.id)}>{item.name}</button>)}</div><p className="guide-measure">Garment measurements are shown in inches.</p><table><thead><tr><th>Size</th><th>Chest</th><th>Length</th></tr></thead><tbody>{styleById(guideStyle).chart.map(([item, chest, length]) => <tr key={item}><td>{item}</td><td>{chest}</td><td>{length}</td></tr>)}</tbody></table><div className="measure-notes"><h2>How to measure</h2><p>Chest: measure around the fullest part, keeping the tape level. Length: measure from the highest shoulder point to the hem.</p><button className="text-button" onClick={() => go("product")}>← Back to product</button></div></section>}
+    {route === "checkout" && <section className="checkout-page"><div className="checkout-main"><button className="back-link" onClick={() => go("shop")}>← Continue shopping</button>{ordered ? <div className="order-success"><p className="eyebrow">Thank you</p><h1>Your order is in.</h1><p>Order GC-{10000 + Math.floor(Math.random() * 900)}. We sent your confirmation to {checkout.email}.</p><button className="button dark" onClick={() => go("home")}>Back to the shop</button></div> : <><h1>Checkout</h1><form className="checkout-form" onSubmit={(event) => { event.preventDefault(); if (!checkout.email || !checkout.first || !checkout.last || !checkout.address || !checkout.city || !checkout.zip) { setCheckoutError("Please complete your contact and shipping details."); return; } setCheckoutError(""); setOrdered(true); setBag([]); }}><h2>01 · Contact</h2><input type="email" placeholder="Email" value={checkout.email} onChange={(e) => setCheckout({ ...checkout, email: e.target.value })} required /><h2>02 · Shipping</h2><div className="form-two"><input placeholder="First name" value={checkout.first} onChange={(e) => setCheckout({ ...checkout, first: e.target.value })} required /><input placeholder="Last name" value={checkout.last} onChange={(e) => setCheckout({ ...checkout, last: e.target.value })} required /></div><input placeholder="Address" value={checkout.address} onChange={(e) => setCheckout({ ...checkout, address: e.target.value })} required /><input placeholder="Apartment, suite, etc. (optional)" value={checkout.apt} onChange={(e) => setCheckout({ ...checkout, apt: e.target.value })} /><div className="form-three"><input placeholder="City" value={checkout.city} onChange={(e) => setCheckout({ ...checkout, city: e.target.value })} required /><input placeholder="State" value={checkout.state} onChange={(e) => setCheckout({ ...checkout, state: e.target.value })} /><input placeholder="ZIP code" value={checkout.zip} onChange={(e) => setCheckout({ ...checkout, zip: e.target.value })} required /></div><h2>03 · Delivery</h2>{[["standard", "Standard", "$6", "5–8 business days after the drop closes"], ["express", "Express", "$15", "2–3 business days after the drop closes"]].map(([id, label, price, note]) => <label className="delivery-option" key={id}><input type="radio" checked={delivery === id} onChange={() => setDelivery(id)} /><span><b>{label}</b><small>{note}</small></span><strong>{price}</strong></label>)}<h2>04 · Support PCRF</h2><div className="checkout-donate"><p>20% of every order is already directed to PCRF.</p><div className="donation-options">{[5, 10, 25].map((amount) => <button type="button" className={donation === amount ? "selected" : ""} key={amount} onClick={() => addDonation(donation === amount ? 0 : amount)}>{`$${amount}`}</button>)}</div></div><h2>Payment</h2><div className="payment-placeholder">Secure payment details will be collected here.</div>{checkoutError && <p className="form-error">{checkoutError}</p>}<button className="button dark place-order">Place order · {money(subtotal + (delivery === "express" ? 15 : 6))}</button></form></>}</div><aside className="order-summary"><button className="summary-toggle" onClick={() => setSummaryOpen(!summaryOpen)}>Order summary <span>{summaryOpen ? "−" : "+"}</span></button>{summaryOpen && <>{bag.map((item) => <div className="summary-item" key={item.key}>{item.donation ? <><span>PCRF donation</span><b>{money(item.donation)}</b></> : <><Image src={pictureFor(item.style, item.print, item.color)} alt="" width={58} height={72} /><span>{printLabel(item.print)}<small>{styleById(item.style).name} · {item.color} · {item.size} · Qty {item.qty}</small></span><b>{money(styleById(item.style).price * item.qty)}</b></>}</div>)}<div className="summary-total"><span>Subtotal</span><b>{money(subtotal)}</b><span>Shipping</span><b>{delivery === "express" ? "$15.00" : "$6.00"}</b><strong>Total</strong><strong>{money(subtotal + (delivery === "express" ? 15 : 6))}</strong></div></>}</aside></section>}
+    <footer className="site-footer"><span>CONTESSA</span><span>20% of proceeds support PCRF</span><a href="https://www.pcrf.net/" target="_blank" rel="noreferrer">Palestine Children's Relief Fund ↗</a></footer>
+    {menuOpen && menu}{bagOpen && bagDrawer}{donateOpen && donateModal}
+    {quick && <div className="overlay modal-overlay" onClick={() => setQuick(null)}><section className="quick-sheet" onClick={(event) => event.stopPropagation()}><button className="modal-close" onClick={() => setQuick(null)}>×</button><Image src={pictureFor(quick.style, quick.print, "Black")} alt="" width={96} height={120} /><div><p className="eyebrow">{styleById(quick.style).name} · Black · ${styleById(quick.style).price}</p><h2>{printLabel(quick.print)}</h2><span>Select a size</span><div className="quick-sizes">{styleById(quick.style).sizes.map((item) => <button key={item} disabled={sizeIsOut(quick.style, "Black", item)} onClick={() => { addItem(quick.style, quick.print, "Black", item); setQuick(null); notify(`Added · ${item}`); }}>{item}</button>)}</div><button className="text-button" onClick={() => { openProduct(quick.style, quick.print); setQuick(null); }}>Change print or color ↗</button></div></section></div>}
+    {toast && <div className="toast" role="status">{toast}</div>}
+  </main>;
 }
+
+function ImpactBlock({ openDonate, goImpact }: { openDonate: () => void; goImpact: () => void }) { return <section className="impact-block"><Image src={`${base}/gc/pcrf-bg-2.jpg`} alt="" fill sizes="100vw" /><div className="impact-overlay"/><div className="impact-content"><p className="eyebrow">Relief commitment</p><h2>20% of every order is directed to the Palestine Children's Relief Fund.</h2><p>PCRF provides medical and humanitarian relief for children across the Levant.</p><div><button className="button light" onClick={openDonate}>Add a donation</button><button className="button outline-light" onClick={goImpact}>Learn more</button></div><Image className="pcrf-chip" src={`${base}/gc/pcrf-logo.png`} alt="PCRF" width={140} height={56} /></div></section>; }
+function ImpactPage({ openDonate }: { openDonate: () => void }) { return <section className="impact-page"><div className="impact-page-hero"><Image src={`${base}/gc/pcrf-bg-1.jpg`} alt="PCRF relief work" fill sizes="100vw" /><div className="impact-page-copy"><p className="eyebrow">Our impact</p><h1>Wear what you stand for.</h1><p>20% of every order is directed to the Palestine Children's Relief Fund, supporting medical and humanitarian relief for children across the Levant.</p><button className="button light" onClick={openDonate}>Add a donation</button><a href="https://www.pcrf.net/" target="_blank" rel="noreferrer">Visit PCRF ↗</a><Image className="pcrf-chip" src={`${base}/gc/pcrf-logo.png`} alt="Palestine Children's Relief Fund" width={140} height={56} /></div></div><div className="impact-photo-grid"><Image src={`${base}/gc/pcrf1.webp`} alt="PCRF humanitarian support" width={900} height={650} /><Image src={`${base}/gc/pcrf2.webp`} alt="PCRF community relief" width={900} height={650} /></div></section>; }
+function Newsletter({ notify }: { notify: (message: string) => void }) { const [email, setEmail] = useState(""); const [done, setDone] = useState(false); return <section className="newsletter"><div><p className="eyebrow">Stay in the loop</p><h2>Drop alerts</h2><p>First to know when the next drop lands.</p></div>{done ? <strong>Thanks — you're on the list.</strong> : <form onSubmit={(e) => { e.preventDefault(); setDone(true); notify("You're on the list"); }}><input type="email" required placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} /><button className="button light">Sign up</button></form>}</section>; }
